@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -31,7 +33,7 @@ func (cfg *apiConfig) postChirp(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("unable to create chirp")
 	}
 
-	respondWithJSON(w, 200, chirp)
+	respondWithJSON(w, 201, chirp)
 
 }
 
@@ -40,17 +42,38 @@ func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("Unable to get chirps", err)
 	}
-	type resp struct {
-		Chirps []Chirp
-	}
 
 	sort.Slice(chirps, func(i, j int) bool { return chirps[i].Id < chirps[j].Id })
 
-	response := resp{
-		Chirps: chirps,
+	respondWithJSON(w, 200, chirps)
+
+}
+
+func (cfg *apiConfig) getChirp(w http.ResponseWriter, r *http.Request) {
+	chirps, err := cfg.db.GetChirps()
+	if err != nil {
+		log.Fatal("Unable to get chirps", err)
+	}
+	if r.PathValue("id") == "" {
+		respondWithError(w, 400, fmt.Sprintf("Expected an id value, recieved: %v", r.PathValue("id")))
+
 	}
 
-	respondWithJSON(w, 200, response)
+	requestValue, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		log.Fatal("Error converting path value")
+	}
+	found := false
+	for _, chirp := range chirps {
+		if chirp.Id == requestValue {
+			respondWithJSON(w, 200, chirp)
+			found = true
+		}
+
+	}
+	if !found {
+		respondWithError(w, 404, fmt.Sprintf("Chirp not found with id %d", requestValue))
+	}
 
 }
 

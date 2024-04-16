@@ -17,8 +17,8 @@ type DBStructure struct {
 }
 
 type Chirp struct {
-	Id   int    `json:"id"`
 	Body string `json:"body"`
+	Id   int    `json:"id"`
 }
 
 // creates a new db file and initiates a new struct for the api to leverage
@@ -48,7 +48,7 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 	}
 	id := len(data.Chirps) + 1
 	log.Printf("pre create chirp\n")
-	chirp := Chirp{id, body}
+	chirp := Chirp{body, id}
 	log.Printf("Pre-assignment\n")
 
 	data.Chirps[id] = chirp

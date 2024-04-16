@@ -32,6 +32,7 @@ func main() {
 	mux.HandleFunc("/api/reset", apiConfig.handleReset)
 	mux.HandleFunc("POST /api/chirps", apiConfig.postChirp)
 	mux.HandleFunc("GET /api/chirps", apiConfig.getChirps)
+	mux.HandleFunc("GET /api/chirps/{id}", apiConfig.getChirp)
 
 	corsMux := middlewareCors(mux)
 
