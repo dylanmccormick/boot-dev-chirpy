@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"sync"
@@ -29,7 +28,8 @@ func NewDB(path string) (*DB, error) {
 		sync.RWMutex{},
 	}
 
-	err := os.WriteFile(db.path, nil, 0666)
+	err := db.EnsureDB()
+
 	if err != nil {
 		return &DB{}, err
 	}
@@ -46,8 +46,10 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 	if err != nil {
 		return Chirp{}, err
 	}
-	id := len(data.Chirps)
+	id := len(data.Chirps) + 1
+	log.Printf("pre create chirp\n")
 	chirp := Chirp{id, body}
+	log.Printf("Pre-assignment\n")
 
 	data.Chirps[id] = chirp
 	log.Printf("Writing chirp to db: %v\n", chirp)
@@ -82,10 +84,11 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 func (db *DB) EnsureDB() error {
 	_, err := os.OpenFile(db.path, os.O_WRONLY, 0666)
 	if err == nil {
+		log.Printf("Database exists %s\n", db.path)
 		return nil
 	}
 	if os.IsNotExist(err) {
-		fmt.Println("DB file does not exist")
+		log.Printf("DB file does not exist %s\n", db.path)
 		err = os.WriteFile(db.path, nil, 0666)
 		if err != nil {
 			return err
@@ -99,7 +102,9 @@ func (db *DB) EnsureDB() error {
 
 // loads db into memory
 func (db *DB) LoadDB() (DBStructure, error) {
-	dat := DBStructure{}
+	dat := DBStructure{
+		make(map[int]Chirp),
+	}
 
 	resp, err := os.ReadFile(db.path)
 	if err != nil {

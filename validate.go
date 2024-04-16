@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -43,8 +44,10 @@ func (cfg *apiConfig) getChirps(w http.ResponseWriter, r *http.Request) {
 		Chirps []Chirp
 	}
 
+	sort.Slice(chirps, func(i, j int) bool { return chirps[i].Id < chirps[j].Id })
+
 	response := resp{
-		chirps,
+		Chirps: chirps,
 	}
 
 	respondWithJSON(w, 200, response)
