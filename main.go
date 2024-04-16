@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/dylanmccormick/internal/database"
 	"log"
 	"net/http"
 )
@@ -9,7 +10,7 @@ import (
 type apiConfig struct {
 	Id             int
 	fileServerHits int
-	db             *DB
+	db             *database.DB
 }
 
 func main() {
@@ -18,7 +19,7 @@ func main() {
 
 	apiConfig := &apiConfig{}
 	var err error
-	apiConfig.db, err = NewDB("database.json")
+	apiConfig.db, err = database.NewDB("database.json")
 	if err != nil {
 		log.Fatal("Unable to create database")
 	}
