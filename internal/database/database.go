@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"sync"
+	"time"
 )
 
 type DB struct {
@@ -13,12 +14,23 @@ type DB struct {
 }
 
 type DBStructure struct {
-	Chirps map[int]Chirp `json:"chirps"`
-	Users  map[int]User
+	Chirps        map[int]Chirp `json:"chirps"`
+	Users         map[int]User
+	RevokedTokens map[string]time.Time
 }
 
 // creates a new db file and initiates a new struct for the api to leverage
-func NewDB(path string) (*DB, error) {
+func NewDB(path string, debug bool) (*DB, error) {
+	if debug {
+		_, err := os.OpenFile("database.json", os.O_WRONLY, 0666)
+		if err == nil {
+			log.Printf("Database exists %s\n", "database.json")
+			log.Printf("Deleting and remaking database for debug mode\n")
+			os.Remove("database.json")
+		}
+
+	}
+
 	db := &DB{
 		"database.json",
 		sync.RWMutex{},
@@ -59,6 +71,7 @@ func (db *DB) LoadDB() (DBStructure, error) {
 	dat := DBStructure{
 		make(map[int]Chirp),
 		make(map[int]User),
+		make(map[string]time.Time),
 	}
 
 	resp, err := os.ReadFile(db.path)
